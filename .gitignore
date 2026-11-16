@@ -1,0 +1,43 @@
+# Dependencies
+**/node_modules/
+
+# Build output
+**/dist/
+
+# Local database files
+server/data/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+.agents/
+.claude/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and test output
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+**/coverage/
+
+# Operating systems and editors
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+#Confedential Docs
+PRD.md
+Notes.txt
