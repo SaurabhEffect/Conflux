@@ -1,7 +1,7 @@
 const DEFAULT_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173']
 
-export function parseAllowedOrigins(value?: string): ReadonlySet<string> {
-  const entries = value === undefined ? DEFAULT_ORIGINS : value.split(',').map((origin) => origin.trim())
+export function parseAllowedOrigins(value?: string, defaults: readonly string[] = DEFAULT_ORIGINS): ReadonlySet<string> {
+  const entries = value === undefined ? defaults : value.split(',').map((origin) => origin.trim())
   const origins = entries.filter(Boolean).map(normalizeOrigin)
   if (origins.length === 0) throw new Error('CONFLUX_ALLOWED_ORIGINS must contain at least one origin')
   return new Set(origins)
