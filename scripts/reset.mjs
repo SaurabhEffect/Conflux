@@ -1,5 +1,3 @@
-// `npm run reset` deletes everything Conflux saved on the server (all pages).
-// Use it when you want a completely empty workspace again.
 import { rmSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
@@ -7,8 +5,7 @@ const dataFolder = fileURLToPath(new URL('../server/data', import.meta.url))
 
 try {
   rmSync(dataFolder, { recursive: true, force: true })
-} 
-catch (error) {
+} catch (error) {
   console.error(`
   Could not delete ${dataFolder}
   (${error.code ?? error.message})
@@ -20,12 +17,15 @@ catch (error) {
 
 console.log(`
   Deleted ${dataFolder}
-  The server's copy of your pages is gone.
+  All accounts, workspaces and pages on the server are gone.
 
-  One more step: your BROWSER also keeps a private copy of each page (that is
-  what makes offline editing work). If you open the app in the same browser,
-  the old pages would be sent back to the server. To really start fresh,
-  either use a new private window, or clear this site's data:
+  Your BROWSER may still hold saved copies of pages from the old accounts (that
+  is what makes offline editing work). They are filed under the old account, so
+  a new account never sees them, but they stay until you clear them. Signing
+  out of an account removes that browser's copies, or you can clear this site's
+  data:
     Chrome / Edge:  press F12, open the Application tab, choose "Storage",
                     then click "Clear site data".
+  Because the old sign-in no longer exists, the app will ask you to sign in
+  again. Create a new account to start fresh.
 `)

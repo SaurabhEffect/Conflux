@@ -1,22 +1,40 @@
 {
   "name": "@conflux/server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "tsx watch --disable-warning=ExperimentalWarning src/index.ts",
     "dev:lan": "tsx watch --disable-warning=ExperimentalWarning src/index.ts --lan",
     "start": "tsx --disable-warning=ExperimentalWarning src/index.ts",
-    "test": "tsx --disable-warning=ExperimentalWarning --test test/allowedOrigins.test.ts test/crdt.test.ts test/store.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "tsx --disable-warning=ExperimentalWarning --test --test-concurrency=1 --test-timeout=120000 test/allowedOrigins.test.ts test/crdt.test.ts test/units.test.ts test/auth.test.ts test/http-security.test.ts test/permissions.test.ts test/invites.test.ts test/members.test.ts test/pages.test.ts test/db.test.ts test/concurrency.test.ts test/sync-auth.test.ts test/sync-permissions.test.ts test/sync-revocation.test.ts",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@conflux/shared": "*",
+    "@electric-sql/pglite": "0.5.16",
+    "@fastify/cookie": "11.1.5",
+    "@fastify/helmet": "13.2.0",
+    "@fastify/static": "10.1.11",
     "@hocuspocus/server": "4.8.0",
+    "drizzle-orm": "0.45.4",
+    "fastify": "5.12.8",
+    "hash-wasm": "4.13.0",
+    "jose": "6.2.17",
+    "pg": "8.23.1",
+    "ws": "8.23.0",
     "y-protocols": "1.0.7",
-    "yjs": "13.6.33"
+    "yjs": "13.6.33",
+    "zod": "4.6.7"
   },
   "devDependencies": {
+    "@hocuspocus/provider": "4.8.0",
     "@types/node": "22.20.5",
+    "@types/pg": "8.23.1",
+    "@types/ws": "8.18.2",
+    "drizzle-kit": "0.31.11",
+    "lib0": "0.2.120",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
   }
