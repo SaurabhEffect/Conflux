@@ -1,10 +1,11 @@
 {
   "name": "conflux",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Conflux: a real-time collaborative workspace. Collaboration in sync.",
   "license": "MIT",
   "workspaces": [
+    "packages/*",
     "server",
     "web"
   ],
@@ -18,11 +19,20 @@
     "predev:lan": "node scripts/check-node.mjs",
     "dev:lan": "concurrently -k -n server,web -c blue,green \"npm run dev:lan -w server\" \"npm run dev:lan -w web\"",
     "build": "npm run build -w web",
-    "typecheck": "npm run typecheck -w server && npm run typecheck -w web",
-    "test": "npm test -w server",
+    "start": "npm run start -w server",
+    "typecheck": "npm run typecheck -w @conflux/shared && npm run typecheck -w server && npm run typecheck -w web",
+    "test": "npm test -w @conflux/shared && npm test -w server",
+    "test:e2e": "npm test --prefix tests/e2e",
+    "test:e2e:setup": "npm install --prefix tests/e2e && npm run install-browser --prefix tests/e2e",
+    "db:generate": "npm run db:generate -w server",
     "reset": "node scripts/reset.mjs"
   },
   "devDependencies": {
     "concurrently": "10.0.7"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": ">=0.25.0"
+    }
   }
 }
