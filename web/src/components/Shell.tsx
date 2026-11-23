@@ -1,3 +1,4 @@
+import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Icon } from './Icons'
 import { LogoMark } from './Logo'
 
@@ -20,7 +21,43 @@ export function Splash() {
   )
 }
 
-export function EmptyState({ onCreate, onOpenMenu }: { onCreate: () => void; onOpenMenu: () => void }) {
+export function FullScreenMessage({
+  title,
+  text,
+  action,
+  onAction,
+  secondary,
+  onSecondary,
+}: {
+  title: string
+  text: string
+  action?: string
+  onAction?: () => void
+  secondary?: string
+  onSecondary?: () => void
+}) {
+  return (
+    <main className="welcome">
+      <LogoMark size={120} />
+      <div className="welcome-card" role="region" aria-label={title}>
+        <h1 className="card-title">{title}</h1>
+        <p className="muted">{text}</p>
+        {action && onAction && (
+          <button type="button" className="btn-primary" onClick={onAction} autoFocus>
+            {action}
+          </button>
+        )}
+        {secondary && onSecondary && (
+          <button type="button" className="link-btn" onClick={onSecondary}>
+            {secondary}
+          </button>
+        )}
+      </div>
+    </main>
+  )
+}
+
+export function EmptyState({ canCreate, onCreate, onOpenMenu }: { canCreate: boolean; onCreate: () => void; onOpenMenu: () => void }) {
   return (
     <div className="centered">
       <div className="mobile-bar">
@@ -28,11 +65,13 @@ export function EmptyState({ onCreate, onOpenMenu }: { onCreate: () => void; onO
       </div>
       <div className="empty-card">
         <LogoMark size={72} />
-        <h1>Your workspace is empty</h1>
-        <p>Create your first page. We will add a short welcome page that shows what Conflux can do.</p>
-        <button type="button" className="btn-primary" onClick={onCreate}>
-          Create the welcome page
-        </button>
+        <h1>{canCreate ? 'This workspace has no pages yet' : 'Nothing to read yet'}</h1>
+        <p>{canCreate ? 'Create the first page to start writing together.' : 'An editor or owner has not created any pages yet. They will show up here as soon as they do.'}</p>
+        {canCreate && (
+          <button type="button" className="btn-primary" onClick={onCreate}>
+            Create a page
+          </button>
+        )}
       </div>
     </div>
   )
@@ -54,4 +93,25 @@ export function NotFound({ onHome, onOpenMenu }: { onHome: () => void; onOpenMen
       </div>
     </div>
   )
+}
+
+export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Conflux crashed:', error, info.componentStack)
+  }
+  render() {
+    if (!this.state.failed) return this.props.children
+    return (
+      <FullScreenMessage
+        title="Something went wrong"
+        text="The page hit an unexpected problem. Your work is saved. Reloading usually fixes it."
+        action="Reload"
+        onAction={() => window.location.reload()}
+      />
+    )
+  }
 }

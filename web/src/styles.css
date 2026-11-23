@@ -248,19 +248,6 @@ button {
   border-top: 1px solid var(--line);
 }
 
-.you {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.you .avatar {
-  margin-left: 0;
-  border: 0;
-  flex: none;
-}
-
 .you-name {
   flex: 1;
   min-width: 0;
@@ -268,15 +255,6 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 500;
-}
-
-.you-edit input {
-  flex: 1;
-  min-width: 0;
-  padding: 6px 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--bg);
 }
 
 .link-btn {
@@ -789,4 +767,556 @@ button {
     padding: 24px 16px 120px;
   }
 
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.stack {
+  display: grid;
+  gap: 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.actions-start {
+  justify-content: flex-start;
+}
+
+/* Forms */
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field label {
+  font-weight: 600;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+.dialog input,
+.dialog select,
+.welcome-card select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+}
+
+.dialog input,
+.welcome-card input {
+  width: 100%;
+  min-width: 0;
+}
+
+.dialog select {
+  max-width: 100%;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.callout {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.card-title {
+  margin: 0 0 2px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.switch-mode {
+  text-align: center;
+}
+
+.welcome-card .link-btn {
+  justify-self: center;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+}
+
+.btn-secondary,
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--panel-hover);
+}
+
+.btn-danger {
+  border: 0;
+  background: var(--danger);
+  color: var(--bg);
+}
+
+.btn-small {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* Dialogs (the browser's own <dialog>) */
+.dialog {
+  width: min(520px, calc(100vw - 24px));
+  max-height: min(88vh, 780px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog::backdrop {
+  background: var(--backdrop);
+}
+
+.dialog-wide {
+  width: min(680px, calc(100vw - 24px));
+}
+
+.dialog-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 8px 20px;
+}
+
+.dialog-head h2 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.dialog-body {
+  padding: 6px 20px 20px;
+  overflow: auto;
+}
+
+.subhead {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  margin-bottom: -1px;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+/* Role badge */
+.role {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.role-owner {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.role-viewer {
+  color: var(--warn);
+}
+
+.switcher,
+.account {
+  position: relative;
+}
+
+.switcher-btn,
+.btn-members,
+.account-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  text-align: left;
+}
+
+.switcher-btn {
+  justify-content: space-between;
+  padding: 9px 10px;
+  font-weight: 600;
+}
+
+.switcher-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-members {
+  padding: 8px 10px;
+  font-weight: 600;
+}
+
+.btn-members span:not(.role) {
+  flex: 1;
+}
+
+.account-btn {
+  padding: 6px 8px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.account-btn:hover,
+.switcher-btn:hover,
+.btn-members:hover {
+  background: var(--panel-hover);
+}
+
+.account-btn .avatar {
+  margin-left: 0;
+  border: 0;
+  flex: none;
+}
+
+.menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: grid;
+  max-height: 320px;
+  padding: 6px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.menu-up {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--panel-hover);
+}
+
+.menu-check {
+  width: 16px;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  color: var(--live);
+}
+
+.menu-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-sep {
+  height: 1px;
+  margin: 4px 2px;
+  background: var(--line);
+}
+
+.menu-note {
+  padding: 6px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--faint);
+  font-size: 12.5px;
+}
+
+.member-list,
+.invite-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 6px;
+  border-radius: 10px;
+}
+
+.member:hover {
+  background: var(--panel);
+}
+
+.member .avatar {
+  width: 34px;
+  height: 34px;
+  margin-left: 0;
+  border: 0;
+  flex: none;
+  font-size: 14px;
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.member-name,
+.member-info .small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-name {
+  font-weight: 600;
+}
+
+.role-help {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--panel);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.role-help div {
+  display: flex;
+  gap: 10px;
+}
+
+.role-help dt {
+  flex: none;
+  width: 54px;
+  font-weight: 600;
+}
+
+.role-help dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+.invite-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.fresh-link {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--live);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.copy-row {
+  display: flex;
+  gap: 8px;
+}
+
+.copy-row input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.live-text {
+  color: var(--live);
+}
+
+.invite {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.invite-info {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.danger-zone {
+  padding: 14px;
+  border: 1px solid var(--danger);
+  border-radius: 12px;
+}
+
+.banner {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.toasts {
+  position: fixed;
+  z-index: 100;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  gap: 8px;
+  max-width: min(360px, calc(100vw - 32px));
+}
+
+.toast {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.toast-error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+@media (max-width: 800px) {
+  .banner {
+    padding: 8px 12px;
+  }
+
+  .dialog-head {
+    padding-left: 16px;
+  }
+
+  .dialog-body {
+    padding: 6px 16px 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .invite-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .invite-form button {
+    grid-column: 1 / -1;
+  }
+
+  .invite {
+    flex-wrap: wrap;
+  }
+
+  .invite-info {
+    flex-basis: 100%;
+    order: 3;
+  }
 }
