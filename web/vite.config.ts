@@ -1,11 +1,17 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// The sync server lives on its own port (1234). The browser connects to it
-// directly, see src/config.ts.
+const serverPort = Number(process.env.PORT) || 1234
+const server = `http://127.0.0.1:${serverPort}`
+
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173 },
-  // The editor (Tiptap + ProseMirror) makes the bundle a bit big. That is fine for now.
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': server,
+      '/collab': { target: server, ws: true },
+    },
+  },
   build: { chunkSizeWarningLimit: 1200 },
 })

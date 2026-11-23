@@ -33,10 +33,21 @@ export function usePeers(provider: HocuspocusProvider | null): Peer[] {
         setPeers(list)
       }
     }
-    update()
-    awareness.on('change', update)
+    let queued = false
+    let alive = true
+    const schedule = () => {
+      if (queued) return
+      queued = true
+      queueMicrotask(() => {
+        queued = false
+        if (alive) update()
+      })
+    }
+    schedule()
+    awareness.on('change', schedule)
     return () => {
-      awareness.off('change', update)
+      alive = false
+      awareness.off('change', schedule)
     }
   }, [provider])
   return peers

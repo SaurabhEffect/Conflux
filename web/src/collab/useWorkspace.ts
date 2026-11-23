@@ -10,8 +10,8 @@ export type PageMeta = {
   createdAt: number
 }
 
-export function useWorkspace(identity: Identity) {
-  const collab = useCollabDoc('workspace', identity)
+export function useWorkspace(_identity: Identity) {
+  const collab = useCollabDoc('workspace')
   const doc = collab?.doc ?? null
   const [pages, setPages] = useState<PageMeta[]>([])
   useEffect(() => {

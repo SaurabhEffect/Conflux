@@ -1,6 +1,6 @@
 import type { ConnectionStatus } from '../collab/useCollabDoc'
 import type { Peer } from '../collab/usePeers'
-import { initialOf } from '../identity'
+import { initialOf } from '../util'
 
 export function Avatars({ peers }: { peers: Peer[] }) {
   const shown = peers.slice(0, 5)
