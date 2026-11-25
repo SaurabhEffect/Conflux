@@ -1,4 +1,5 @@
 import { PAGE_TEXT_FIELD } from '@conflux/shared'
+
 type Id = { client: number; clock: number }
 export type CursorPosition = { type: Id | null; tname: string | null; item: Id | null; assoc: number }
 export type Cursor = { anchor: CursorPosition; head: CursorPosition }
@@ -22,7 +23,6 @@ function cleanPosition(value: unknown): CursorPosition | null {
   if (tname !== null && tname !== PAGE_TEXT_FIELD) return null
   const assoc = value.assoc ?? 0
   if (typeof assoc !== 'number' || !Number.isSafeInteger(assoc) || Math.abs(assoc) > 1) return null
-  // A position that points at nothing at all is an error in the editor's own code.
   if (type === null && tname === null && item === null) return null
   return { type, tname, item, assoc }
 }

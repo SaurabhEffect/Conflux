@@ -2,7 +2,6 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { parseDocName, type Role } from '@conflux/shared'
 import type { Db, Tx } from './db/client'
 import { memberships, pages } from './db/schema'
-
 export type PageRow = typeof pages.$inferSelect
 export async function workspaceRole(db: Db | Tx, userId: string, workspaceId: string): Promise<Role | null> {
   const [row] = await db
@@ -20,9 +19,7 @@ export async function pageAccess(db: Db | Tx, userId: string, pageId: string): P
     .where(and(eq(pages.id, pageId), isNull(pages.deletedAt)))
   return row ?? null
 }
-
 export type DocAccess = { kind: 'page' | 'workspace'; workspaceId: string; pageId: string | null; role: Role }
-
 export async function docAccess(db: Db | Tx, userId: string, docName: string): Promise<DocAccess | null> {
   const ref = parseDocName(docName)
   if (!ref) return null

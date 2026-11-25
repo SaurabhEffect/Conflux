@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { DEMO_BOT_REPLY_DELAY_MS } from '@conflux/shared'
 import { parseAllowedOrigins } from './allowedOrigins'
 
 export type RateLimit = { max: number; windowMs: number }
@@ -12,7 +13,6 @@ export type Config = {
   lan: boolean
   databaseUrl: string | null
   dataDir: string
-  /** Signs the short-lived sync tokens. Random per start unless CONFLUX_SECRET is set. */
   secret: Uint8Array
   secretIsRandom: boolean
   allowedOrigins: ReadonlySet<string>
@@ -22,10 +22,17 @@ export type Config = {
   logLevel: string
   sessionDays: number
   syncTokenSeconds: number
-  /** How often the server re-checks every open connection against the database. */
   sweepIntervalMs: number
-  /** A new WebSocket must prove who it is within this time, or it is closed. */
   authDeadlineMs: number
+  demo: {
+    enabled: boolean
+    idleSeconds: number
+    maxSeconds: number
+    maxActive: number
+    botReplyDelayMs: number
+    botTypeDelayMs: number
+    botMaxReplies: number
+  }
   limits: {
     global: RateLimit
     signup: RateLimit
@@ -33,8 +40,11 @@ export type Config = {
     loginPerAccount: RateLimit
     invite: RateLimit
     syncToken: RateLimit
+    demoCreate: RateLimit
+    demoJoin: RateLimit
+    demoToken: RateLimit
     socketUpgrades: RateLimit
-    /** Password hashes the whole server will start per second. Hashing is deliberately expensive. */
+    messagesPerSecond: number
     hashesPerSecond: number
     socketsPerIp: number
     socketsPerUser: number
@@ -83,6 +93,15 @@ export function loadConfig(env: Env = process.env, argv: readonly string[] = pro
     syncTokenSeconds: 60,
     sweepIntervalMs: 2000,
     authDeadlineMs: 10_000,
+    demo: {
+      enabled: bool(env, 'CONFLUX_DEMO', true),
+      idleSeconds: integer(env, 'CONFLUX_DEMO_IDLE_MINUTES', 30, 1, 24 * 60) * 60,
+      maxSeconds: integer(env, 'CONFLUX_DEMO_MAX_HOURS', 3, 1, 72) * 3600,
+      maxActive: integer(env, 'CONFLUX_DEMO_MAX_ACTIVE', 100, 1, 10_000),
+      botReplyDelayMs: DEMO_BOT_REPLY_DELAY_MS,
+      botTypeDelayMs: 35,
+      botMaxReplies: 30,
+    },
     limits: {
       global: rate(600, MINUTE),
       signup: rate(10, HOUR),
@@ -90,7 +109,11 @@ export function loadConfig(env: Env = process.env, argv: readonly string[] = pro
       loginPerAccount: rate(6, 10 * MINUTE),
       invite: rate(30, MINUTE),
       syncToken: rate(300, MINUTE),
+      demoCreate: rate(5, HOUR),
+      demoJoin: rate(60, 10 * MINUTE),
+      demoToken: rate(300, MINUTE),
       socketUpgrades: rate(60, MINUTE),
+      messagesPerSecond: 100 * scale,
       hashesPerSecond: 10 * scale,
       socketsPerIp: 200,
       socketsPerUser: 40,
@@ -116,7 +139,6 @@ function bool(env: Env, name: string, fallback: boolean): boolean {
   throw new ConfigError(`${name} must be true or false (got "${raw}")`)
 }
 
-/** false = ignore proxy headers. A number = trust that many proxies in front of the server. */
 function trustProxy(env: Env): boolean | number {
   const raw = env.CONFLUX_TRUST_PROXY?.trim().toLowerCase()
   if (!raw || raw === 'false' || raw === '0') return false

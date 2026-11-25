@@ -21,6 +21,7 @@ export type DatabaseOptions = {
 }
 
 const migrationsFolder = fileURLToPath(new URL('../../drizzle', import.meta.url))
+
 export async function openDatabase(options: DatabaseOptions): Promise<Database> {
   return options.url ? openPostgres(options.url, options.onError) : openEmbedded(options.dataDir)
 }
@@ -79,4 +80,5 @@ export function pgErrorCode(error: unknown): string | undefined {
   const code = inner?.code ?? (error as { code?: unknown } | null)?.code
   return typeof code === 'string' ? code : undefined
 }
+
 export const isUniqueViolation = (error: unknown) => pgErrorCode(error) === '23505'

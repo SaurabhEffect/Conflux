@@ -47,6 +47,7 @@ export function inviteRoutes(ctx: AppContext) {
       const response: { invite: InviteDto; token: string } = { invite: toInviteDto(invite, user.displayName), token }
       return reply.code(201).send(response)
     })
+
     app.get('/api/workspaces/:id/invites', authed, async (request) => {
       const { user } = me(request)
       const id = idParam((request.params as { id?: string }).id)
@@ -60,6 +61,7 @@ export function inviteRoutes(ctx: AppContext) {
       const list: InviteDto[] = rows.map((row) => toInviteDto(row.invite, row.createdByName))
       return { invites: list }
     })
+
     app.delete('/api/workspaces/:id/invites/:inviteId', authed, async (request, reply) => {
       const { user } = me(request)
       const params = request.params as { id?: string; inviteId?: string }
@@ -75,7 +77,6 @@ export function inviteRoutes(ctx: AppContext) {
       })
       return reply.code(204).send()
     })
-
     app.post('/api/invites/preview', async (request) => {
       take(limiters.invite, addressKey(request.ip))
       const { token } = inviteTokenBody.parse(request.body)

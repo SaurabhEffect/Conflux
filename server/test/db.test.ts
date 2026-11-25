@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
@@ -9,11 +9,6 @@ import { openDatabase, pgErrorCode, isUniqueViolation } from '../src/db/client'
 import { invites, memberships, pageDocs, pages, sessions, users, workspaces } from '../src/db/schema'
 import { Client, makeTeam, startTestServer, type Team, type TestServer } from './helpers'
 
-/**
- * The database is the last line of defence: even a bug in the API should not
- * be able to create an owner invite, a duplicate account, or a half-deleted workspace.
- */
-
 let server: TestServer
 before(async () => {
   server = await startTestServer()
@@ -21,8 +16,6 @@ before(async () => {
 after(async () => {
   await server.close()
 })
-
-/** Both database drivers answer raw SQL with { rows: [...] }. */
 const rowsOf = <T>(result: unknown) => (result as { rows: T[] }).rows
 
 const code = (promise: PromiseLike<unknown>) =>
@@ -89,7 +82,6 @@ describe('what goes when something is deleted', () => {
       assert.equal((await server.db.select().from(table).where(eq(table.workspaceId, crew.ws))).length, 0)
     }
     assert.equal((await server.db.select().from(pageDocs).where(eq(pageDocs.pageId, crew.pageId))).length, 0)
-    // nobody else was touched
     assert.equal((await server.db.select().from(users).where(eq(users.id, crew.ids.editor))).length, 1)
   })
 
@@ -119,7 +111,6 @@ describe('what goes when something is deleted', () => {
     const crew = await makeTeam(server)
     const made = await crew.owner.post(`/api/workspaces/${crew.ws}/invites`, { role: 'viewer' })
     await server.db.delete(users).where(eq(users.id, crew.ids.owner))
-    // the workspace has no owner now, which only a direct database change can cause
     const [row] = await server.db.select().from(invites).where(eq(invites.id, made.body.invite.id))
     assert.equal(row.createdBy, null)
   })
@@ -135,14 +126,14 @@ describe('the schema', () => {
   it('has exactly the tables the design calls for', async () => {
     const result = await server.db.execute(sql`select table_name from information_schema.tables where table_schema = 'public' order by table_name`)
     const names = rowsOf<{ table_name: string }>(result).map((row) => row.table_name)
-    assert.deepEqual(names, ['invites', 'memberships', 'page_docs', 'pages', 'sessions', 'users', 'workspaces'])
+    assert.deepEqual(names, ['invites', 'memberships', 'page_docs', 'pages', 'sandbox_docs', 'sandbox_pages', 'sandbox_participants', 'sandboxes', 'sessions', 'users', 'workspaces'])
   })
 
   it('stores passwords and session tokens only as hashes: no column is called "password" or "token"', async () => {
     const result = await server.db.execute(sql`select column_name from information_schema.columns where table_schema = 'public'`)
     const columns = rowsOf<{ column_name: string }>(result).map((row) => row.column_name)
-    assert.ok(columns.includes('password_hash') && columns.filter((name) => name === 'token_hash').length === 2)
-    assert.ok(!columns.includes('password') && !columns.includes('token'))
+    assert.ok(columns.includes('password_hash') && columns.filter((name) => name === 'token_hash').length === 3 && columns.includes('ticket_hash'))
+    assert.ok(!columns.includes('password') && !columns.includes('token') && !columns.includes('ticket'))
   })
 })
 
@@ -157,7 +148,8 @@ describe('starting up', () => {
       const second = await openDatabase({ url: null, dataDir: dir })
       assert.equal((await second.db.select().from(users)).length, 1)
       const applied = await second.db.execute(sql`select count(*)::int as n from drizzle.__drizzle_migrations`)
-      assert.equal(rowsOf<{ n: number }>(applied)[0].n, 1)
+      const journal = JSON.parse(readFileSync(new URL('../drizzle/meta/_journal.json', import.meta.url), 'utf8')) as { entries: unknown[] }
+      assert.equal(rowsOf<{ n: number }>(applied)[0].n, journal.entries.length)
       await second.close()
 
       const third = await openDatabase({ url: null, dataDir: dir })
