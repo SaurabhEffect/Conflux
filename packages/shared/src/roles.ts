@@ -1,11 +1,3 @@
-/**
- * Who may do what. This is the ONLY place the rules live.
- *
- * The API and the sync server both ask `can(role, action)`; the web app asks
- * it too, but only to decide which buttons to show. Hiding a button is never
- * security: the server checks every request again.
- *
- */
 export const ROLES = ['owner', 'editor', 'viewer'] as const
 export type Role = (typeof ROLES)[number]
 

@@ -44,6 +44,16 @@ export type PageDto = {
 export type MeResponse = { user: UserDto; workspaces: WorkspaceDto[] }
 export type SignupResponse = MeResponse & { welcomePageId: string }
 export type InvitePreview = { workspaceName: string; role: Role; invitedBy: string | null }
+export type DemoPageDto = { id: string; title: string; position: number }
+export type DemoInfo = { enabled: boolean; idleMinutes: number; maxHours: number }
+export type DemoState = {
+  me: { id: string; displayName: string; cursorColor: string; isHost: boolean }
+  pages: DemoPageDto[]
+  endsAt: string
+  idleSeconds: number
+  participants: number
+  bot: { name: string; color: string }
+}
 
 export type ApiErrorBody = {
   error: {
@@ -60,6 +70,7 @@ export const CLOSE_CODES = {
   forbidden: 4403,
   tooManyConnections: 4429,
   roleChanged: 4430,
+  demoEnded: 4410,
 } as const
 
 export const CLOSE_REASONS = {
@@ -67,4 +78,5 @@ export const CLOSE_REASONS = {
   accessRevoked: 'access-revoked',
   roleChanged: 'role-changed',
   tooManyConnections: 'too-many-connections',
+  demoEnded: 'demo-ended',
 } as const

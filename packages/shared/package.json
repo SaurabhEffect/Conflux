@@ -10,7 +10,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "tsx --disable-warning=ExperimentalWarning --test test/permissions.test.ts test/schemas.test.ts",
+    "test": "tsx --disable-warning=ExperimentalWarning --test test/permissions.test.ts test/schemas.test.ts test/demo.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

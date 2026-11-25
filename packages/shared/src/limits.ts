@@ -14,4 +14,8 @@ export const LIMITS = {
   inviteMaxHours: 24 * 30,
   inviteDefaultUses: 10,
   inviteMaxUses: 50,
+  demoMaxParticipants: 6,
+  demoPageMaxBytes: 256 * 1024,
+  demoMessageMaxBytes: 512 * 1024,
+  demoSocketsPerParticipant: 4,
 } as const
