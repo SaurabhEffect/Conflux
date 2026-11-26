@@ -22,6 +22,7 @@ type AuthApi = {
 
 const AuthContext = createContext<AuthApi | null>(null)
 const SESSION_ENDED = 'Your session ended. Please sign in again.'
+
 const tidyLocalCopies = (me: { user: UserDto; workspaces: WorkspaceDto[] }) =>
   void forgetOrphanedCopies(
     me.user.id,
@@ -89,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           await api.logout()
         } catch (error) {
-          // Could not reach the server: stay signed in rather than pretend we left.
           if (!(error instanceof ApiError) || error.status !== 401) throw error
         }
         setState({ status: 'signedOut', notice: null })

@@ -2,12 +2,11 @@ import { PAGE_TEXT_FIELD } from '@conflux/shared'
 import type { HocuspocusProvider } from '@hocuspocus/provider'
 import { Collaboration } from '@tiptap/extension-collaboration'
 import { CollaborationCaret } from '@tiptap/extension-collaboration-caret'
-import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { Placeholder } from '@tiptap/extensions'
 import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
 import { useEffect } from 'react'
 import type * as Y from 'yjs'
+import { createSchemaExtensions } from '../editor/extensions'
 import { pendingSeeds } from '../session'
 import { Toolbar } from './Toolbar'
 
@@ -23,10 +22,8 @@ export function PageEditor({ pageId, doc, provider, user, editable }: Props) {
   const editor = useEditor({
     editable,
     extensions: [
-      StarterKit.configure({ undoRedo: false }),
+      ...createSchemaExtensions(),
       Placeholder.configure({ placeholder: editable ? 'Start writing…' : 'This page is empty.' }),
-      TaskList,
-      TaskItem.configure({ nested: true }),
       Collaboration.configure({ document: doc, field: PAGE_TEXT_FIELD }),
       CollaborationCaret.configure({ provider, user }),
     ],

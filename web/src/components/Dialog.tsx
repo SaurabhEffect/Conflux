@@ -26,6 +26,7 @@ export function Dialog({ title, onClose, children, wide = false }: Props) {
       aria-labelledby={titleId}
       onClose={onClose}
       onClick={(event) => {
+        // A click on the dimmed area around the window lands on the <dialog> element itself.
         if (event.target === ref.current) ref.current?.close()
       }}
     >

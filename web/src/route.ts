@@ -6,10 +6,12 @@ export type Route =
   | { name: 'workspace'; workspaceId: string }
   | { name: 'page'; workspaceId: string; pageId: string }
   | { name: 'join'; token: string }
+  | { name: 'demo'; ticket: string; pageId: string | null }
 
 const PAGE_RE = new RegExp(`^#/w/(${UUID_PATTERN})/p/(${UUID_PATTERN})/?$`)
 const WORKSPACE_RE = new RegExp(`^#/w/(${UUID_PATTERN})/?$`)
 const JOIN_RE = /^#\/join\/([^/?#]*)$/
+const DEMO_RE = new RegExp(`^#/demo/([^/?#]*)(?:/p/(${UUID_PATTERN}))?/?$`)
 
 export function parseRoute(hash: string): Route {
   const page = PAGE_RE.exec(hash)
@@ -18,6 +20,8 @@ export function parseRoute(hash: string): Route {
   if (workspace) return { name: 'workspace', workspaceId: workspace[1] }
   const join = JOIN_RE.exec(hash)
   if (join) return { name: 'join', token: join[1] }
+  const demo = DEMO_RE.exec(hash)
+  if (demo) return { name: 'demo', ticket: demo[1], pageId: demo[2] ?? null }
   return { name: 'home' }
 }
 
@@ -31,6 +35,8 @@ export function hrefFor(route: Route): string {
       return `#/w/${route.workspaceId}/p/${route.pageId}`
     case 'join':
       return `#/join/${route.token}`
+    case 'demo':
+      return `#/demo/${route.ticket}${route.pageId ? `/p/${route.pageId}` : ''}`
   }
 }
 

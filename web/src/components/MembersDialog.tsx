@@ -76,7 +76,9 @@ function People({ workspace, version, onGone, onChanged }: Pick<Props, 'workspac
   useEffect(() => {
     void load()
   }, [load, version])
+
   const onlyOwner = isOwner && members !== null && members.filter((member) => member.role === 'owner').length === 1
+
   async function changeRole(member: MemberDto, role: Role) {
     if (role === member.role) return
     const result = await action.run(() => api.setRole(workspace.id, member.userId, role))

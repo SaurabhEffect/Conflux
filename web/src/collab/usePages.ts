@@ -10,7 +10,6 @@ const RELOAD_DELAY_MS = 120
 export function usePages(workspaceId: string, options: Options = {}) {
   const [pages, setPages] = useState<PageDto[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-
   const alive = useRef(true)
   const latestRequest = useRef(0)
   const reloadTimer = useRef<number | null>(null)
@@ -82,6 +81,7 @@ export function usePages(workspaceId: string, options: Options = {}) {
       document.removeEventListener('visibilitychange', again)
       if (reloadTimer.current !== null) window.clearTimeout(reloadTimer.current)
       reloadTimer.current = null
+      // Leaving the workspace must not lose the last thing typed in a title.
       for (const [id, timer] of timers) {
         window.clearTimeout(timer)
         void sendRename(id)

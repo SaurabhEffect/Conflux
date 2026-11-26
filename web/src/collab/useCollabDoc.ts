@@ -17,6 +17,17 @@ export type CollabOptions = {
   onAuthenticated?: () => void
 }
 
+export type LiveDocSource = {
+  fetchToken: (docName: string) => Promise<string>
+  localCopy: string | null
+}
+
+export type LiveDocOptions = {
+  onStateless?: (payload: string) => void
+  onAuthenticated?: () => void
+  onTrouble?: () => void
+}
+
 export type CollabDoc = {
   doc: Y.Doc
   provider: HocuspocusProvider
@@ -30,12 +41,19 @@ type CloseInfo = { event: { code: number; reason: string } }
 
 export function useCollabDoc(docName: string, options: CollabOptions = {}): CollabDoc | null {
   const { user, refresh } = useSession()
-  const userId = user.id
-  const keepIn = options.workspaceId
+  const localCopy = options.workspaceId ? localStoreName(user.id, options.workspaceId, docName) : null
+  return useLiveDoc(
+    docName,
+    { fetchToken: async (name) => (await api.syncToken(name)).token, localCopy },
+    { onStateless: options.onStateless, onAuthenticated: options.onAuthenticated, onTrouble: () => void refresh() },
+  )
+}
 
-  const latest = useRef({ options, refresh })
+export function useLiveDoc(docName: string, source: LiveDocSource, options: LiveDocOptions = {}): CollabDoc | null {
+  const keepIn = source.localCopy
+  const latest = useRef({ options, source })
   useEffect(() => {
-    latest.current = { options, refresh }
+    latest.current = { options, source }
   })
 
   const [connection, setConnection] = useState<{ doc: Y.Doc; provider: HocuspocusProvider } | null>(null)
@@ -53,7 +71,7 @@ export function useCollabDoc(docName: string, options: CollabOptions = {}): Coll
       let authenticated = false
 
       const doc = new Y.Doc()
-      const saved = keepIn ? new IndexeddbPersistence(localStoreName(userId, keepIn, docName), doc) : null
+      const saved = keepIn ? new IndexeddbPersistence(keepIn, doc) : null
       const socket = new HocuspocusProviderWebsocket({ url: COLLAB_URL, delay: 500, minDelay: 500, maxDelay: 5000 })
 
       const publishStatus = () => {
@@ -74,11 +92,12 @@ export function useCollabDoc(docName: string, options: CollabOptions = {}): Coll
         websocketProvider: socket,
         token: async () => {
           try {
-            return (await api.syncToken(docName)).token
+            return await latest.current.source.fetchToken(docName)
           } catch (error) {
             if (alive && !finished) {
               if (error instanceof ApiError && error.status === 404) giveUp()
               else if (error instanceof ApiError && error.status === 401) socket.disconnect() // the app signs itself out
+              // Network or server trouble: drop this attempt so the connection is retried with a fresh token.
               else window.setTimeout(() => socket.webSocket?.close(), 0)
             }
             throw error
@@ -101,11 +120,9 @@ export function useCollabDoc(docName: string, options: CollabOptions = {}): Coll
       provider.on('stateless', ({ payload }: { payload: string }) => latest.current.options.onStateless?.(payload))
       socket.on('close', ({ event }: CloseInfo) => {
         if (!alive || finished) return
-        if (event.code === CLOSE_CODES.forbidden) giveUp()
-        // The session may have ended, or only the short-lived token ran out: find out which.
-        else if (event.code === CLOSE_CODES.unauthorized) void latest.current.refresh()
-        // Our role changed. We reconnect by ourselves; meanwhile re-read the roles shown on screen.
-        else if (event.code === CLOSE_CODES.roleChanged) void latest.current.refresh()
+        if (event.code === CLOSE_CODES.forbidden || event.code === CLOSE_CODES.demoEnded) giveUp()
+        else if (event.code === CLOSE_CODES.unauthorized) latest.current.options.onTrouble?.()
+        else if (event.code === CLOSE_CODES.roleChanged) latest.current.options.onTrouble?.()
       })
 
       const markReady = () => {
@@ -141,7 +158,7 @@ export function useCollabDoc(docName: string, options: CollabOptions = {}): Coll
       window.clearTimeout(timer)
       teardown?.()
     }
-  }, [docName, userId, keepIn])
+  }, [docName, keepIn])
 
   return connection ? { ...connection, ready, status, scope, noAccess } : null
 }

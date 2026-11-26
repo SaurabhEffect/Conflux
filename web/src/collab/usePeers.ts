@@ -33,6 +33,7 @@ export function usePeers(provider: HocuspocusProvider | null): Peer[] {
         setPeers(list)
       }
     }
+
     let queued = false
     let alive = true
     const schedule = () => {

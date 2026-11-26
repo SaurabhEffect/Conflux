@@ -1,11 +1,14 @@
-import { LIMITS, type InvitePreview } from '@conflux/shared'
-import { useState, type FormEvent } from 'react'
+import { LIMITS, type DemoInfo, type InvitePreview } from '@conflux/shared'
+import { useEffect, useState, type FormEvent } from 'react'
+import { api } from '../api'
 import { useAuth } from '../auth'
 import { useRoute } from '../route'
 import { pendingSeeds } from '../session'
 import { welcomeHtml } from '../seeds'
+import { Icon } from './Icons'
 import { LogoMark } from './Logo'
 import { ROLE_LABELS } from './RoleBadge'
+import { useStartDemo } from './useStartDemo'
 
 type Props = {
   invite?: InvitePreview | null
@@ -21,6 +24,22 @@ export function AuthScreen({ invite = null }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [demo, setDemo] = useState<DemoInfo | null>(null)
+  const demoStarter = useStartDemo()
+
+  // Whether the server offers the guest demo (it can be switched off). If this cannot be asked, no demo is offered.
+  useEffect(() => {
+    let alive = true
+    api.demoInfo().then(
+      (info) => {
+        if (alive) setDemo(info)
+      },
+      () => undefined,
+    )
+    return () => {
+      alive = false
+    }
+  }, [])
 
   const signingUp = mode === 'signup'
 
@@ -32,6 +51,7 @@ export function AuthScreen({ invite = null }: Props) {
     try {
       if (signingUp) {
         const created = await auth.signup({ email, password, displayName })
+        // The first page of a new account is empty on the server; this tab fills in the welcome text once.
         pendingSeeds.set(created.welcomePageId, welcomeHtml)
         if (!invite) go({ name: 'page', workspaceId: created.workspaces[0].id, pageId: created.welcomePageId }, { replace: true })
       } else {
@@ -135,6 +155,18 @@ export function AuthScreen({ invite = null }: Props) {
             {signingUp ? 'Sign in' : 'Create an account'}
           </button>
         </p>
+
+        {demo?.enabled && !invite && (
+          <div className="demo-offer">
+            <button type="button" className="btn-secondary" disabled={demoStarter.busy} onClick={() => void demoStarter.start()}>
+              <Icon name="bot" size={16} />
+              {demoStarter.busy ? 'Starting…' : 'Try the live demo, no account'}
+            </button>
+            <p className="muted small">
+              A throw-away workspace with a bot, for you and a friend. It ends after {demo.idleMinutes} minutes without typing, and nothing is kept.
+            </p>
+          </div>
+        )}
       </form>
     </main>
   )

@@ -119,6 +119,14 @@ const PATHS = {
       <path d="m16 8 4 4-4 4M20 12H9" />
     </>
   ),
+  bot: (
+    <>
+      <rect x="4" y="8" width="16" height="11" rx="3" />
+      <path d="M12 8V5" />
+      <circle cx="12" cy="4" r="1" />
+      <path d="M9 13h.01M15 13h.01M9.5 16.5h5" />
+    </>
+  ),
   link: (
     <>
       <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" />

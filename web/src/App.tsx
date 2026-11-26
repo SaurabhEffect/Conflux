@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AuthProvider, useAuth, useSession } from './auth'
 import { AuthScreen } from './components/AuthScreen'
 import { CreateWorkspaceDialog } from './components/CreateWorkspaceDialog'
+import { DemoScreen } from './components/DemoScreen'
 import { InviteScreen } from './components/InviteScreen'
 import { LogoMark } from './components/Logo'
 import { MembersDialog } from './components/MembersDialog'
@@ -32,8 +33,8 @@ export default function App() {
 function Gate() {
   const { state, retry } = useAuth()
   const { route } = useRoute()
-
   if (route.name === 'join') return <InviteScreen token={route.token} />
+  if (route.name === 'demo') return <DemoScreen ticket={route.ticket} pageId={route.pageId} />
   switch (state.status) {
     case 'loading':
       return <Loading />
@@ -85,7 +86,7 @@ function Workspace() {
     go({ name: 'home' }, { replace: true })
   }, [go])
 
-  if (route.name === 'home' || route.name === 'join') {
+  if (route.name === 'home' || route.name === 'join' || route.name === 'demo') {
     if (choices.length > 0) return <Loading />
     return (
       <>
@@ -265,11 +266,9 @@ function WorkspaceView({ workspace, workspaces, pageId, onLost, onLeft }: ViewPr
     ) : (
       <NotFound onHome={goHome} onOpenMenu={openMenu} />
     )
-  } 
-  else if (list.length === 0) {
+  } else if (list.length === 0) {
     content = <EmptyState canCreate={can(workspace.role, 'page:create')} onCreate={() => void newPage()} onOpenMenu={openMenu} />
-  } 
-  else {
+  } else {
     content = <Splash />
   }
 

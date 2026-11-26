@@ -27,8 +27,11 @@ export function PageView({ page, role, onRename, onDelete, onOpenMenu, onHome }:
   useEffect(() => {
     if (justCreated.delete(page.id)) titleRef.current?.focus()
   }, [page.id])
+
   const mayEdit = can(role, 'page:edit') && collab?.scope !== 'readonly'
+
   if (collab?.noAccess) return <NotFound onHome={onHome} onOpenMenu={onOpenMenu} />
+
   return (
     <section className="page">
       <header className="page-header">
