@@ -22,6 +22,7 @@ const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning',
     PORT: port,
     CONFLUX_DATA_DIR: dataDir,
     CONFLUX_LOG_LEVEL: 'warn',
+    // The tests create many accounts from one address, far faster than a person would.
     CONFLUX_RATE_LIMIT_SCALE: '100',
   },
 })

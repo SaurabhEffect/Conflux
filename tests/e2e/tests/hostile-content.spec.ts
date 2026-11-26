@@ -21,6 +21,7 @@ test.describe('content from a script', () => {
       words.insert(0, 'click me', { link: { href: 'javascript:window.__pwned=true', target: '_blank', rel: 'noopener noreferrer', class: null } })
       paragraph.insert(0, [words])
       editor.text.insert(editor.text.length, [paragraph])
+
       await expect.poll(() => pageText(ana.page)).toContain('click me')
       const link = ana.page.locator('.doc a', { hasText: /^click me$/ })
       await expect(link).toHaveCount(1)

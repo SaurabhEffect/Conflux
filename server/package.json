@@ -7,7 +7,7 @@
     "dev": "tsx watch --disable-warning=ExperimentalWarning src/index.ts",
     "dev:lan": "tsx watch --disable-warning=ExperimentalWarning src/index.ts --lan",
     "start": "tsx --disable-warning=ExperimentalWarning src/index.ts",
-    "test": "tsx --disable-warning=ExperimentalWarning --test --test-concurrency=1 --test-timeout=120000 test/allowedOrigins.test.ts test/crdt.test.ts test/units.test.ts test/auth.test.ts test/http-security.test.ts test/permissions.test.ts test/invites.test.ts test/members.test.ts test/pages.test.ts test/db.test.ts test/concurrency.test.ts test/sync-auth.test.ts test/sync-permissions.test.ts test/sync-revocation.test.ts",
+    "test": "tsx --disable-warning=ExperimentalWarning --test --test-concurrency=1 --test-timeout=120000 test/allowedOrigins.test.ts test/crdt.test.ts test/units.test.ts test/auth.test.ts test/http-security.test.ts test/permissions.test.ts test/invites.test.ts test/members.test.ts test/pages.test.ts test/db.test.ts test/concurrency.test.ts test/sync-auth.test.ts test/sync-permissions.test.ts test/sync-revocation.test.ts test/demo-api.test.ts test/demo-isolation.test.ts test/demo-sync.test.ts test/demo-lifecycle.test.ts test/demo-bot.test.ts test/demo-content.test.ts",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate"
   },
@@ -30,6 +30,10 @@
   },
   "devDependencies": {
     "@hocuspocus/provider": "4.8.0",
+    "@tiptap/core": "3.33.1",
+    "@tiptap/extension-list": "3.33.1",
+    "@tiptap/starter-kit": "3.33.1",
+    "@tiptap/y-tiptap": "3.3.0",
     "@types/node": "22.20.5",
     "@types/pg": "8.23.1",
     "@types/ws": "8.18.2",

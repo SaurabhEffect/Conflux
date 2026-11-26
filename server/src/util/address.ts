@@ -1,4 +1,5 @@
 import { isIPv6 } from 'node:net'
+
 export function addressKey(address: string): string {
   const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(address)
   if (mapped) return mapped[1]

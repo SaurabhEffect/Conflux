@@ -15,13 +15,16 @@ import { Budget, RateLimiter } from '../util/limiter'
 import { take, type AppContext } from './context'
 import { HttpError } from './errors'
 import { authRoutes } from './routes/auth'
+import { demoRoutes } from './routes/demo'
 import { inviteRoutes } from './routes/invites'
 import { pageRoutes } from './routes/pages'
 import { syncTokenRoutes } from './routes/syncToken'
 import { workspaceRoutes } from './routes/workspaces'
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+
 export const serverVersion: string = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version
+
 export async function buildApp(config: Config, db: Db): Promise<{ app: FastifyInstance; sync: Sync }> {
   const hops = config.trustProxy === true ? 1 : config.trustProxy
   const options: FastifyServerOptions = {
@@ -46,6 +49,9 @@ export async function buildApp(config: Config, db: Db): Promise<{ app: FastifyIn
       loginPerAccount: new RateLimiter(config.limits.loginPerAccount),
       invite: new RateLimiter(config.limits.invite),
       syncToken: new RateLimiter(config.limits.syncToken),
+      demoCreate: new RateLimiter(config.limits.demoCreate),
+      demoJoin: new RateLimiter(config.limits.demoJoin),
+      demoToken: new RateLimiter(config.limits.demoToken),
     },
   }
   await app.register(cookie)
@@ -55,7 +61,6 @@ export async function buildApp(config: Config, db: Db): Promise<{ app: FastifyIn
       directives: {
         'default-src': ["'self'"],
         'script-src': ["'self'"],
-        // The editor sets small inline styles (cursor colours, avatars).
         'style-src': ["'self'", "'unsafe-inline'"],
         'img-src': ["'self'", 'data:'],
         'font-src': ["'self'"],
@@ -72,15 +77,14 @@ export async function buildApp(config: Config, db: Db): Promise<{ app: FastifyIn
     crossOriginOpenerPolicy: { policy: 'same-origin' },
     crossOriginResourcePolicy: { policy: 'same-origin' },
   })
-
   app.removeContentTypeParser('text/plain')
   app.decorateRequest('auth', null)
+  app.decorateRequest('guest', null)
   app.addHook('onRequest', async (request, reply) => {
     if (SAFE_METHODS.has(request.method)) return
     reply.header('Cache-Control', 'no-store')
     rejectForeignSites(request, config)
   })
-
   app.setNotFoundHandler((request, reply) => {
     const isApi = request.url.startsWith('/api/') || request.url.startsWith('/collab')
     if (!isApi && config.webDist && request.method === 'GET') return reply.sendFile('index.html')
@@ -105,6 +109,7 @@ export async function buildApp(config: Config, db: Db): Promise<{ app: FastifyIn
     request.log.error({ err: error }, 'unhandled error')
     return reply.code(500).send({ error: { code: 'internal', message: 'Something went wrong on our side' } })
   })
+
   await app.register(async (api) => {
     api.addHook('onRequest', async (request, reply) => {
       reply.header('Cache-Control', 'no-store')
@@ -115,6 +120,7 @@ export async function buildApp(config: Config, db: Db): Promise<{ app: FastifyIn
     await api.register(inviteRoutes(ctx))
     await api.register(pageRoutes(ctx))
     await api.register(syncTokenRoutes(ctx))
+    await api.register(demoRoutes(ctx))
   })
 
   if (config.webDist) {
@@ -127,6 +133,7 @@ export async function buildApp(config: Config, db: Db): Promise<{ app: FastifyIn
       },
     })
   }
+
   app.addHook('preClose', async () => {
     await sync.close()
   })

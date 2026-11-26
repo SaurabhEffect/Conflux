@@ -5,12 +5,17 @@ import type { Db, Tx } from '../db/client'
 import { workspaces } from '../db/schema'
 import { forbidden, notFound } from './errors'
 
+/** A malformed id is simply "not found". No special answer for "that is not even a valid id". */
 export function idParam(value: unknown): string {
   const parsed = uuidSchema.safeParse(value)
   if (!parsed.success) throw notFound()
   return parsed.data
 }
 
+/**
+ * Not a member (or no such workspace) = 404, so people cannot probe which
+ * workspaces exist. A member without the right role = 403.
+ */
 export async function authorizeWorkspace(db: Db | Tx, userId: string, workspaceId: string, action: Action): Promise<Role> {
   const role = await workspaceRole(db, userId, workspaceId)
   if (!role) throw notFound('Workspace not found')

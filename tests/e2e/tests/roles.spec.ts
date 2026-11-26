@@ -45,9 +45,17 @@ test.describe('editors', () => {
 
   test('two people typing at once end up with exactly the same page', async ({ app }) => {
     const { ana, guest: ben } = await workspaceWith(app, 'editor', 'Ben')
+
+    const count = (text: string, letter: string) => text.split(letter).length - 1
+    const start = await pageText(ana.page)
+
     await Promise.all([typeAtEnd(ana.page, ' AAAAAAAAAA'), typeAtEnd(ben.page, ' BBBBBBBBBB')])
-    await expect(editor(ana.page)).toContainText('AAAAAAAAAA')
-    await expect(editor(ana.page)).toContainText('BBBBBBBBBB')
+    await expect
+      .poll(async () => {
+        const text = await pageText(ana.page)
+        return [count(text, 'A') - count(start, 'A'), count(text, 'B') - count(start, 'B')]
+      })
+      .toEqual([10, 10])
     await expect.poll(async () => (await pageText(ana.page)) === (await pageText(ben.page))).toBe(true)
   })
 

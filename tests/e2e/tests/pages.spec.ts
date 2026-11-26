@@ -17,8 +17,10 @@ async function newPageTitled(person: Person, title: string) {
 test.describe('pages', () => {
   test('a new page shows up for everyone straight away, with its title and its text', async ({ app }) => {
     const { ana, guest: ben } = await pair(app, 'editor', 'Ben')
+
     await newPageTitled(ana, 'Roadmap')
     await typeAtEnd(ana.page, 'First milestone: ship it.')
+
     const link = pageList(ben.page).getByRole('link', { name: 'Roadmap' })
     await expect(link).toBeVisible()
     await link.click()
@@ -30,9 +32,11 @@ test.describe('pages', () => {
     const { ana, guest: ben } = await pair(app, 'editor', 'Ben')
     await newPageTitled(ana, 'Draft')
     await expect(pageList(ben.page).getByRole('link', { name: 'Draft' })).toBeVisible()
+
     await ana.page.getByLabel('Page title').fill('Final')
     await expect(pageList(ben.page).getByRole('link', { name: 'Final' })).toBeVisible()
     await expect(pageList(ben.page).getByRole('link', { name: 'Draft' })).toHaveCount(0)
+
     await ana.page.reload()
     await expect(ana.page.getByLabel('Page title')).toHaveValue('Final')
   })
@@ -41,9 +45,11 @@ test.describe('pages', () => {
     const { ana, guest: ben } = await pair(app, 'editor', 'Ben')
     await newPageTitled(ana, 'Ana’s page')
     await pageList(ben.page).getByRole('link', { name: 'Ana’s page' }).click()
+
     await ben.page.getByLabel('Page title').fill('Ben fixed the title')
     await expect(pageList(ana.page).getByRole('link', { name: 'Ben fixed the title' })).toBeVisible()
   })
+
   test('deleting a page removes it for everyone, and anyone looking at it is told', async ({ app }) => {
     const { ana, guest: ben } = await pair(app, 'editor', 'Ben')
     await newPageTitled(ana, 'Scratch')
@@ -51,8 +57,10 @@ test.describe('pages', () => {
     await expect(scratch).toBeVisible()
     await scratch.click()
     await expect(ben.page.getByLabel('Page title')).toHaveValue('Scratch')
+
     await ana.page.getByRole('button', { name: 'Delete page' }).click() // the "are you sure?" box is accepted by the test setup
     await expect(pageList(ana.page).getByRole('link', { name: 'Scratch' })).toHaveCount(0)
+
     await expect(ben.page.getByRole('heading', { name: 'This page is gone' })).toBeVisible()
     await expect(pageList(ben.page).getByRole('link', { name: 'Scratch' })).toHaveCount(0)
     await ben.page.getByRole('button', { name: 'Back to my pages' }).click()
@@ -63,11 +71,13 @@ test.describe('pages', () => {
     const { ana, guest: vic } = await pair(app, 'viewer', 'Vic')
     await newPageTitled(ana, 'Notes')
     await typeAtEnd(ana.page, 'Meeting at noon.')
+
     const notes = pageList(vic.page).getByRole('link', { name: 'Notes' })
     await expect(notes).toBeVisible()
     await notes.click()
     await expect(editor(vic.page)).toContainText('Meeting at noon.')
     await expect(editor(vic.page)).toHaveAttribute('contenteditable', 'false')
+
     await ana.page.getByRole('button', { name: 'Delete page' }).click()
     await expect(pageList(vic.page).getByRole('link', { name: 'Notes' })).toHaveCount(0)
   })
@@ -89,6 +99,7 @@ test.describe('pages', () => {
     const ana = await app.signUp('Ana')
     await newPageTitled(ana, 'x'.repeat(300))
     expect((await ana.page.getByLabel('Page title').inputValue()).length).toBeLessThanOrEqual(120)
+
     const tooLong = await call(ana.page, 'POST', `/api/workspaces/${workspaceIdOf(ana.page)}/pages`, { title: 'x'.repeat(300) })
     expect(tooLong.status).toBe(400)
     expect(tooLong.body.error.code).toBe('invalid_input')

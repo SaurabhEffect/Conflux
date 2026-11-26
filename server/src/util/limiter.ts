@@ -1,9 +1,8 @@
 import type { RateLimit } from '../config'
-
 export type LimitResult = { ok: true } | { ok: false; retryAfterSeconds: number }
-
 const MAX_KEYS = 50_000
 const PRUNE_EVERY_MS = 60_000
+
 export class RateLimiter {
   private readonly entries = new Map<string, { count: number; resetAt: number }>()
   private lastPrune: number
@@ -18,7 +17,6 @@ export class RateLimiter {
     if (time - this.lastPrune >= PRUNE_EVERY_MS) this.prune(time)
     let entry = this.entries.get(key)
     if (!entry || entry.resetAt <= time) {
-      // Someone is spraying keys. A Map remembers the order keys were added in, so the first one is the oldest.
       if (!entry && this.entries.size >= MAX_KEYS) {
         const oldest = this.entries.keys().next()
         if (!oldest.done) this.entries.delete(oldest.value)
@@ -32,7 +30,6 @@ export class RateLimiter {
     }
     return { ok: true }
   }
-
   private prune(time: number) {
     this.lastPrune = time
     for (const [key, entry] of this.entries) if (entry.resetAt <= time) this.entries.delete(key)
@@ -42,7 +39,6 @@ export class RateLimiter {
 export class Budget {
   private tokens: number
   private last: number
-
   constructor(
     private readonly perSecond: number,
     private readonly now: () => number = Date.now,

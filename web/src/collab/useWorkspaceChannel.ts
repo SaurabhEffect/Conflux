@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import { useCollabDoc } from './useCollabDoc'
 
 export type ChannelEvent = WorkspaceEvent['type'] | 'reconnected'
+
 export function useWorkspaceChannel(workspaceId: string, onEvent: (event: ChannelEvent) => void) {
   const onStateless = useCallback(
     (payload: string) => {

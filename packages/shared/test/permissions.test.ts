@@ -46,10 +46,12 @@ describe('can()', () => {
 
 describe('document names', () => {
   const id = '4f8f8d3e-2d0a-4d5c-9a43-0b8e3e1f6a10'
+
   it('round-trips page and workspace names', () => {
     assert.deepEqual(parseDocName(pageDocName(id)), { kind: 'page', id })
     assert.deepEqual(parseDocName(workspaceDocName(id)), { kind: 'workspace', id })
   })
+
   it('rejects anything that is not exactly kind.uuid', () => {
     const bad = [
       '',

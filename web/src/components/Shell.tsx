@@ -97,12 +97,15 @@ export function NotFound({ onHome, onOpenMenu }: { onHome: () => void; onOpenMen
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false }
+
   static getDerivedStateFromError() {
     return { failed: true }
   }
+
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Conflux crashed:', error, info.componentStack)
   }
+
   render() {
     if (!this.state.failed) return this.props.children
     return (

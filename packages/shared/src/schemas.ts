@@ -41,6 +41,7 @@ export const passwordSchema = z
   .max(LIMITS.passwordMax, `Password can be at most ${LIMITS.passwordMax} characters`)
 
 const roleForInvite = z.enum(['editor', 'viewer'])
+
 export const signupBody = z.strictObject({
   email: emailSchema,
   password: passwordSchema,
@@ -53,9 +54,12 @@ export const loginBody = z.strictObject({
 })
 
 export const updateMeBody = z.strictObject({ displayName: displayNameSchema })
+
 export const createWorkspaceBody = z.strictObject({ name: workspaceNameSchema })
 export const updateWorkspaceBody = z.strictObject({ name: workspaceNameSchema })
+
 export const updateMemberBody = z.strictObject({ role: z.enum(['owner', 'editor', 'viewer']) })
+
 export const createInviteBody = z.strictObject({
   role: roleForInvite,
   expiresInHours: z.number().int().min(1).max(LIMITS.inviteMaxHours).default(LIMITS.inviteDefaultHours),
@@ -64,6 +68,7 @@ export const createInviteBody = z.strictObject({
 
 export const inviteTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/, 'Invalid invite link')
 export const inviteTokenBody = z.strictObject({ token: inviteTokenSchema })
+export const demoTicketBody = z.strictObject({ ticket: z.string().regex(/^[A-Za-z0-9_-]{43}$/, 'Invalid demo link') })
 export const createPageBody = z.strictObject({ title: pageTitleSchema.default('') })
 export const updatePageBody = z.strictObject({ title: pageTitleSchema })
 export const syncTokenBody = z.strictObject({ doc: z.string().max(100) })

@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { expect, test as base, type Browser, type BrowserContext, type Locator, type Page } from '@playwright/test'
 
 export const PASSWORD = 'correct horse battery staple'
+
 export type Person = {
   name: string
   email: string
@@ -73,6 +74,7 @@ export { expect }
 
 export const workspaceIdOf = (page: Page) => /#\/w\/([0-9a-f-]{36})/.exec(page.url())?.[1] ?? ''
 export const pageIdOf = (page: Page) => /\/p\/([0-9a-f-]{36})/.exec(page.url())?.[1] ?? ''
+
 export const editor = (page: Page) => page.locator('.doc')
 export const pageText = (page: Page) =>
   editor(page).evaluate((element) => {
@@ -114,6 +116,7 @@ export async function typeAtEnd(page: Page, text: string) {
 }
 
 export const accountMenu = (page: Page) => page.getByRole('button', { name: /^Account:/ })
+
 export async function signOut(page: Page) {
   await accountMenu(page).click()
   await page.getByRole('menuitem', { name: 'Sign out' }).click()

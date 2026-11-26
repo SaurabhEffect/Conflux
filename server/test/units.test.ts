@@ -65,6 +65,23 @@ describe('configuration', () => {
     assert.equal(load({ CONFLUX_TRUST_PROXY: 'false' }).trustProxy, false)
   })
 
+  it('offers the guest demo by default, and every limit of it can be changed', () => {
+    const demo = load().demo
+    assert.deepEqual(
+      { enabled: demo.enabled, idle: demo.idleSeconds, max: demo.maxSeconds, active: demo.maxActive },
+      { enabled: true, idle: 30 * 60, max: 3 * 3600, active: 100 },
+    )
+    const custom = load({ CONFLUX_DEMO: 'false', CONFLUX_DEMO_IDLE_MINUTES: '5', CONFLUX_DEMO_MAX_HOURS: '1', CONFLUX_DEMO_MAX_ACTIVE: '7' }).demo
+    assert.deepEqual({ enabled: custom.enabled, idle: custom.idleSeconds, max: custom.maxSeconds, active: custom.maxActive }, { enabled: false, idle: 300, max: 3600, active: 7 })
+  })
+
+  it('refuses nonsense demo limits instead of running with them', () => {
+    assert.throws(() => load({ CONFLUX_DEMO: 'sometimes' }), /CONFLUX_DEMO/)
+    for (const name of ['CONFLUX_DEMO_IDLE_MINUTES', 'CONFLUX_DEMO_MAX_HOURS', 'CONFLUX_DEMO_MAX_ACTIVE']) {
+      for (const value of ['0', '-1', '1.5', 'many', '99999999']) assert.throws(() => load({ [name]: value }), new RegExp(name), `${name}=${value}`)
+    }
+  })
+
   it('multiplies the rate limits for tests and load tests only', () => {
     const normal = load()
     const scaled = load({ CONFLUX_RATE_LIMIT_SCALE: '10' })
@@ -219,7 +236,7 @@ describe('sync tokens', () => {
 
   it('round-trips and expires in about a minute', async () => {
     const { token, expiresAt } = await signSyncToken(secret, claims, 60)
-    assert.deepEqual(await verifySyncToken(secret, token), claims)
+    assert.deepEqual(await verifySyncToken(secret, token), { ...claims, kind: 'account' })
     const left = expiresAt.getTime() - Date.now()
     assert.ok(left > 55_000 && left <= 60_000)
   })
@@ -227,7 +244,19 @@ describe('sync tokens', () => {
   it('carries no role: permissions are always looked up fresh', async () => {
     const { token } = await signSyncToken(secret, claims, 60)
     const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString())
-    assert.deepEqual(Object.keys(payload).sort(), ['aud', 'doc', 'exp', 'iat', 'iss', 'sid', 'sub'])
+    assert.deepEqual(Object.keys(payload).sort(), ['aud', 'doc', 'exp', 'iat', 'iss', 'knd', 'sid', 'sub'])
+  })
+
+  it('says whether it is a signed-in person or a guest demo visitor, and nothing else is allowed', async () => {
+    const guest = await signSyncToken(secret, { ...claims, kind: 'demo' }, 60)
+    assert.equal((await verifySyncToken(secret, guest.token)).kind, 'demo')
+    const made = (extra: Record<string, unknown>) =>
+      new SignJWT({ sid: 's-1', doc: claims.doc, ...extra }).setProtectedHeader({ alg: 'HS256' }).setSubject('u-1').setIssuer('conflux').setAudience('conflux-sync').setIssuedAt().setExpirationTime('1m').sign(secret)
+    // A token made before guests existed has no kind: it is an account token.
+    assert.equal((await verifySyncToken(secret, await made({}))).kind, 'account')
+    for (const knd of ['admin', 'Demo', '', 7, null, ['demo']]) {
+      await assert.rejects(verifySyncToken(secret, await made({ knd })), Error, `kind ${JSON.stringify(knd)}`)
+    }
   })
 
   it('rejects a token signed with another secret', async () => {

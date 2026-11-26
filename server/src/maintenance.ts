@@ -1,10 +1,14 @@
 import { and, isNotNull, lt, or, sql } from 'drizzle-orm'
 import type { FastifyBaseLogger } from 'fastify'
 import { deleteExpiredSessions } from './auth/sessions'
+import type { Config } from './config'
 import type { Db } from './db/client'
 import { invites, pages } from './db/schema'
+import { purgeSandboxes } from './demo/sandboxes'
 
-const HOUR = 60 * 60 * 1000
+const MINUTE = 60 * 1000
+const HOUR = 60 * MINUTE
+
 export async function runMaintenance(db: Db, log: FastifyBaseLogger): Promise<void> {
   try {
     const sessions = await deleteExpiredSessions(db)
@@ -29,9 +33,26 @@ export async function runMaintenance(db: Db, log: FastifyBaseLogger): Promise<vo
   }
 }
 
-export function startMaintenance(db: Db, log: FastifyBaseLogger): () => void {
+export async function purgeDemos(db: Db, demo: Config['demo'], log: FastifyBaseLogger): Promise<number> {
+  try {
+    const removed = await purgeSandboxes(db, demo)
+    if (removed > 0) log.info({ demos: removed }, 'removed timed-out demos')
+    return removed
+  } catch (error) {
+    log.error({ err: error }, 'removing timed-out demos failed')
+    return 0
+  }
+}
+
+export function startMaintenance(db: Db, log: FastifyBaseLogger, demo: Config['demo']): () => void {
   void runMaintenance(db, log)
-  const timer = setInterval(() => void runMaintenance(db, log), HOUR)
-  timer.unref()
-  return () => clearInterval(timer)
+  const hourly = setInterval(() => void runMaintenance(db, log), HOUR)
+  hourly.unref()
+  void purgeDemos(db, demo, log)
+  const minutely = setInterval(() => void purgeDemos(db, demo, log), MINUTE)
+  minutely.unref()
+  return () => {
+    clearInterval(hourly)
+    clearInterval(minutely)
+  }
 }

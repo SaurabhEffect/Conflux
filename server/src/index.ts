@@ -27,7 +27,7 @@ const database = await openDatabase({
 
 const { app, sync } = await buildApp(config, database.db)
 sync.attach(app.server)
-const stopMaintenance = startMaintenance(database.db, app.log)
+const stopMaintenance = startMaintenance(database.db, app.log, config.demo)
 
 try {
   await app.listen({ port: config.port, host: config.host })

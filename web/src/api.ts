@@ -1,5 +1,7 @@
 import type {
   ApiErrorBody,
+  DemoInfo,
+  DemoState,
   InviteDto,
   InvitePreview,
   MeResponse,
@@ -13,6 +15,7 @@ import type {
 export class ApiError extends Error {
   readonly status: number
   readonly code: string
+
   constructor(status: number, code: string, message: string) {
     super(message)
     this.name = 'ApiError'
@@ -22,6 +25,7 @@ export class ApiError extends Error {
 }
 
 let onSessionEnded: (() => void) | null = null
+
 export function setSessionEndedHandler(handler: (() => void) | null): void {
   onSessionEnded = handler
 }
@@ -40,12 +44,12 @@ async function request<T>(method: string, path: string, body?: unknown, options:
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(20_000),
     })
-  } 
-  catch {
+  } catch {
     throw new ApiError(0, 'network', 'Cannot reach the server. Check your connection and try again.')
   }
 
   if (response.status === 204) return undefined as T
+
   let data: unknown = null
   try {
     data = await response.json()
@@ -68,6 +72,7 @@ async function request<T>(method: string, path: string, body?: unknown, options:
 const enc = encodeURIComponent
 
 export const api = {
+  // ---- who am I
   signup: (input: { email: string; password: string; displayName: string }) =>
     request<SignupResponse>('POST', '/api/auth/signup', input, { anonymous: true }),
   login: (input: { email: string; password: string }) => request<MeResponse>('POST', '/api/auth/login', input, { anonymous: true }),
@@ -75,6 +80,7 @@ export const api = {
   me: () => request<MeResponse>('GET', '/api/auth/me', undefined, { anonymous: true }),
   updateMe: (displayName: string) => request<MeResponse>('PATCH', '/api/auth/me', { displayName }),
 
+  // ---- workspaces and who is in them
   createWorkspace: (name: string) => request<WorkspaceDto>('POST', '/api/workspaces', { name }),
   renameWorkspace: (id: string, name: string) => request<WorkspaceDto>('PATCH', `/api/workspaces/${enc(id)}`, { name }),
   deleteWorkspace: (id: string) => request<void>('DELETE', `/api/workspaces/${enc(id)}`),
@@ -83,6 +89,7 @@ export const api = {
     request<{ ok: true }>('PATCH', `/api/workspaces/${enc(id)}/members/${enc(userId)}`, { role }),
   removeMember: (id: string, userId: string) => request<void>('DELETE', `/api/workspaces/${enc(id)}/members/${enc(userId)}`),
 
+  // ---- invite links
   createInvite: (id: string, input: { role: 'editor' | 'viewer'; expiresInHours: number; maxUses: number }) =>
     request<{ invite: InviteDto; token: string }>('POST', `/api/workspaces/${enc(id)}/invites`, input),
   invites: (id: string) => request<{ invites: InviteDto[] }>('GET', `/api/workspaces/${enc(id)}/invites`),
@@ -90,10 +97,20 @@ export const api = {
   previewInvite: (token: string) => request<InvitePreview>('POST', '/api/invites/preview', { token }, { anonymous: true }),
   acceptInvite: (token: string) => request<WorkspaceDto>('POST', '/api/invites/accept', { token }),
 
+  // ---- pages
   pages: (workspaceId: string) => request<{ pages: PageDto[] }>('GET', `/api/workspaces/${enc(workspaceId)}/pages`),
   createPage: (workspaceId: string, title: string) => request<PageDto>('POST', `/api/workspaces/${enc(workspaceId)}/pages`, { title }),
   renamePage: (id: string, title: string) => request<PageDto>('PATCH', `/api/pages/${enc(id)}`, { title }),
   deletePage: (id: string) => request<void>('DELETE', `/api/pages/${enc(id)}`),
 
+  // ---- live sync
   syncToken: (doc: string) => request<{ token: string; expiresAt: string }>('POST', '/api/sync-token', { doc }),
+
+  // ---- guest demo. No account is involved, so a 401 here never means "your account session ended".
+  demoInfo: () => request<DemoInfo>('GET', '/api/demo/info', undefined, { anonymous: true }),
+  startDemo: () => request<{ ticket: string }>('POST', '/api/demo/sessions', {}, { anonymous: true }),
+  joinDemo: (ticket: string) => request<DemoState>('POST', '/api/demo/join', { ticket }, { anonymous: true }),
+  demoSyncToken: (doc: string) => request<{ token: string; expiresAt: string }>('POST', '/api/demo/sync-token', { doc }, { anonymous: true }),
+  endDemo: () => request<void>('POST', '/api/demo/end', undefined, { anonymous: true }),
+  leaveDemo: () => request<void>('POST', '/api/demo/leave', undefined, { anonymous: true }),
 }

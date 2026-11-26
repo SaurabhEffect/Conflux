@@ -17,7 +17,6 @@ import { authorizeWorkspace, idParam, withWorkspaceLock } from '../guards'
 export function workspaceRoutes(ctx: AppContext) {
   const { db, sync } = ctx
   const authed = { preHandler: requireAuth(ctx) }
-
   return async (app: FastifyInstance) => {
     app.post('/api/workspaces', authed, async (request, reply) => {
       const { user } = me(request)
@@ -88,7 +87,6 @@ export function workspaceRoutes(ctx: AppContext) {
         .innerJoin(users, eq(users.id, memberships.userId))
         .where(eq(memberships.workspaceId, id))
         .orderBy(asc(memberships.createdAt), asc(users.id))
-      // Email addresses are only for the people who manage the workspace.
       const members: MemberDto[] = rows.map((row) => toMemberDto(row, role === 'owner'))
       return { members }
     })
@@ -99,7 +97,6 @@ export function workspaceRoutes(ctx: AppContext) {
       const id = idParam(params.id)
       const targetId = idParam(params.userId)
       const body = updateMemberBody.parse(request.body)
-
       await withWorkspaceLock(db, user.id, id, 'members:manage', async (tx) => {
         const [target] = await tx
           .select()
@@ -135,7 +132,6 @@ export function workspaceRoutes(ctx: AppContext) {
         await tx.delete(memberships).where(and(eq(memberships.workspaceId, id), eq(memberships.userId, targetId)))
       })
       request.log.info({ user: user.id, workspace: id, target: targetId }, leaving ? 'member left' : 'member removed')
-      // Their open pages close right now. This is the "removed member loses live access" rule.
       await sync.sweepNow()
       sync.notifyWorkspace(id, 'members')
       return reply.code(204).send()

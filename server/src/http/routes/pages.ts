@@ -63,6 +63,7 @@ export function pageRoutes(ctx: AppContext) {
       sync.notifyWorkspace(access.page.workspaceId, 'pages')
       return toPageDto(updated)
     })
+
     app.delete('/api/pages/:id', authed, async (request, reply) => {
       const { user } = me(request)
       const pageId = idParam((request.params as { id?: string }).id)

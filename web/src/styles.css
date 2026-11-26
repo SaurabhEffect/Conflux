@@ -1001,6 +1001,7 @@ button:disabled {
   color: var(--warn);
 }
 
+/* Sidebar: workspace switcher, members, account */
 .switcher,
 .account {
   position: relative;
@@ -1127,6 +1128,7 @@ button:disabled {
   font-size: 12.5px;
 }
 
+/* Members and invite links */
 .member-list,
 .invite-list {
   margin: 0;
@@ -1250,6 +1252,7 @@ button:disabled {
   border-radius: 12px;
 }
 
+/* Read-only notice and toasts */
 .banner {
   flex: none;
   display: flex;
@@ -1319,4 +1322,65 @@ button:disabled {
     flex-basis: 100%;
     order: 3;
   }
+}
+
+/* Guest demo */
+.demo-tag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 8px 4px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.demo-note {
+  margin: 0 2px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sidebar-foot > .btn-secondary {
+  width: 100%;
+}
+
+.demo-signup {
+  align-self: flex-start;
+}
+
+.demo-hint code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.demo-hint .icon-btn {
+  margin-left: auto;
+  flex: none;
+}
+
+.demo-offer {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.demo-offer .btn-secondary {
+  width: 100%;
+}
+
+.demo-offer p {
+  margin: 0;
 }
