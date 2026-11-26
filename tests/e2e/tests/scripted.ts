@@ -2,7 +2,6 @@ import { HocuspocusProvider, HocuspocusProviderWebsocket } from '@hocuspocus/pro
 import { WebSocket } from 'ws'
 import * as Y from 'yjs'
 import { expect } from '@playwright/test'
-
 function socketFor(origin: string) {
   return class extends WebSocket {
     constructor(address: string | URL, protocols?: string | string[]) {

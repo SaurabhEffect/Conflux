@@ -10,6 +10,7 @@ test.describe('sessions', () => {
     expect(session?.httpOnly).toBe(true)
     expect(session?.sameSite).toBe('Lax')
     expect(session?.path).toBe('/')
+
     expect(await ana.page.evaluate(() => document.cookie)).not.toContain('conflux_session')
     const stored = await ana.page.evaluate(() => JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }))
     expect(stored).not.toContain(session?.value ?? 'no-value')
@@ -19,6 +20,7 @@ test.describe('sessions', () => {
     const ana = await app.signUp('Ana')
     const second = await app.anotherTab(ana)
     await expect(editor(second)).toContainText('Welcome to Conflux')
+
     const started = Date.now()
     await signOut(ana.page)
     await expect(ana.page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
@@ -31,6 +33,7 @@ test.describe('sessions', () => {
     const ana = await app.signUp('Ana')
     const cookie = (await ana.context.cookies()).find((item) => item.name.endsWith('conflux_session'))
     expect(cookie).toBeDefined()
+
     const thief = await playwrightRequest.newContext({ baseURL, extraHTTPHeaders: { Cookie: `${cookie?.name}=${cookie?.value}` } })
     try {
       expect((await thief.get('/api/auth/me')).status()).toBe(200)
@@ -45,6 +48,7 @@ test.describe('sessions', () => {
   test('sync tokens are short-lived and made for exactly one document', async ({ app }) => {
     const ana = await app.signUp('Ana')
     const doc = `page.${pageIdOf(ana.page)}`
+
     const issued = await call(ana.page, 'POST', '/api/sync-token', { doc })
     expect(issued.status).toBe(200)
     const claims = JSON.parse(Buffer.from(String(issued.body.token).split('.')[1], 'base64url').toString('utf8'))
@@ -67,6 +71,7 @@ test.describe('sessions', () => {
     expect(policy).not.toMatch(/script-src[^;]*unsafe-inline/)
     expect(index.headers()['x-content-type-options']).toBe('nosniff')
     expect(index.headers()['referrer-policy']).toBe('no-referrer')
+
     const api = await request.get('/api/auth/me')
     expect(api.status()).toBe(401)
     expect(api.headers()['cache-control']).toBe('no-store')
@@ -74,7 +79,6 @@ test.describe('sessions', () => {
 
   test('a request that says it comes from another website is refused, even with the right cookie', async ({ app }) => {
     const ana = await app.signUp('Ana')
-
     const foreignOrigin = await ana.context.request.post('/api/workspaces', { headers: { Origin: 'https://evil.example' }, data: { name: 'Evil' } })
     expect(foreignOrigin.status()).toBe(403)
     const crossSite = await ana.context.request.post('/api/workspaces', { headers: { 'Sec-Fetch-Site': 'cross-site' }, data: { name: 'Evil' } })

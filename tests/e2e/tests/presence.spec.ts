@@ -3,6 +3,7 @@ import { createInviteLink, expect, pageIdOf, pageText, test, typeAtEnd, type Per
 import { scriptedPerson } from './scripted'
 
 const inviteToken = async (owner: Person, role: 'editor' | 'viewer') => (await createInviteLink(owner, role)).split('#/join/')[1]
+
 test.describe('presence from a script', () => {
   test('a viewer who sends malformed cursors cannot break the editors on the page', async ({ app, baseURL }) => {
     const ana = await app.signUp('Ana')
