@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@conflux/shared": "*",
-    "@electric-sql/pglite": "0.5.16",
+    "@electric-sql/pglite": "0.5.17",
     "@fastify/cookie": "11.1.5",
     "@fastify/helmet": "13.2.0",
     "@fastify/static": "10.1.11",
