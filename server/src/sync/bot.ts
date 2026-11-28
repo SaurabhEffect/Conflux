@@ -23,7 +23,8 @@ export type Bots = {
 const LINGER_MS = 3000
 const GREETING_DELAY_MS = 1500
 export const BOT_PREFIX = '🤖'
-const COMMAND_RE = new RegExp(`^${DEMO_BOT_MENTION}(?:\\s+(\\S+))?$`, 'i')
+const COMMAND_RE = new RegExp(`^${DEMO_BOT_MENTION}[,:]?(?:\\s+(\\S+?))?[.!?]*$`, 'i')
+const isKnownCommand = (word: string | undefined): boolean => word !== undefined && (DEMO_BOT_COMMANDS as readonly string[]).includes(word.toLowerCase())
 export const BOT_CONTEXT = { bot: true } as const
 
 type Session = {
@@ -152,12 +153,13 @@ export function createBots({ hocuspocus, demo, log, reserveAwareness, releaseAwa
     if (!document) return
     const fragment = document.getXmlFragment(PAGE_TEXT_FIELD)
     const blocks = textBlocks(fragment)
-    for (let index = 0; index < blocks.length - 1; index += 1) {
+    for (let index = 0; index < blocks.length; index += 1) {
       const block = blocks[index]
       if (block.nodeName !== 'paragraph') continue
       const text = plainText(block).replace(/\s+/g, ' ').trim()
       const match = COMMAND_RE.exec(text)
       if (!match) continue
+      if (index === blocks.length - 1 && !isKnownCommand(match[1])) continue
       const key = itemKey(block)
       if (!session.handled.has(key) && isBotLine(siblingAfter(block))) {
         session.handled.set(key, text)

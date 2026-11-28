@@ -131,14 +131,43 @@ describe('answering commands', () => {
     await waitFor(() => lineAfter(peer, '@bot help') === replyFor('help', NO_COUNTS), 6000, 'the answer to appear under the question')
   })
 
-  it('waits for Enter: a command on the last line is not answered until something follows it', async () => {
+  it('answers a finished command on the last line after a pause, but waits for Enter on anything half-typed', async () => {
     const server = await boot()
     const { peer } = await quietPage(server)
-    addParagraph(peer, '@bot hello')
+    addParagraph(peer, '@bot')
     await settle(900)
-    assert.equal(lineAfter(peer, '@bot hello'), undefined, 'nothing yet')
+    assert.equal(lineAfter(peer, '@bot'), undefined, 'a bare mention may still be getting its word')
+    peer.doc.transact(() => {
+      const last = fragmentOf(peer).toArray().at(-1) as Y.XmlElement
+      const text = last.get(0) as Y.XmlText
+      text.insert(text.length, ' hel')
+    })
+    await settle(900)
+    assert.equal(lineAfter(peer, '@bot hel'), undefined, 'a half-typed word may still be getting its letters')
+    addParagraph(peer, '@bot hello')
+    await waitFor(() => lineAfter(peer, '@bot hello') === replyFor('hello', NO_COUNTS), 6000, 'the answer to a finished command, with no Enter')
+  })
+
+  it('leaves a command on the last line alone when its word is not one it knows, until something follows it', async () => {
+    const server = await boot()
+    const { peer } = await quietPage(server)
+    addParagraph(peer, '@bot halp')
+    await settle(900)
+    assert.equal(lineAfter(peer, '@bot halp'), undefined, 'nothing yet')
     addParagraph(peer, 'next line')
-    await waitFor(() => lineAfter(peer, '@bot hello') === replyFor('hello', NO_COUNTS), 6000, 'the answer after Enter')
+    await waitFor(() => lineAfter(peer, '@bot halp') === `${BOT_PREFIX} I do not know that one. Try ${DEMO_BOT_MENTION} help.`, 6000, 'the answer after Enter')
+  })
+
+  it('answers "@bot, help", "@bot help!" and "@bot: count." (a comma, a colon and an ending mark are forgiven)', async () => {
+    const server = await boot()
+    const { peer } = await quietPage(server)
+    for (const line of ['@bot, help', '@bot help!', '@bot: count.']) {
+      addParagraph(peer, line)
+      addParagraph(peer, 'x')
+    }
+    await waitFor(() => lineAfter(peer, '@bot, help') === replyFor('help', NO_COUNTS), 6000)
+    await waitFor(() => lineAfter(peer, '@bot help!') === replyFor('help', NO_COUNTS), 6000)
+    await waitFor(() => (lineAfter(peer, '@bot: count.') ?? '').startsWith(`${BOT_PREFIX} This page has `), 6000)
   })
 
   it('answers "@bot", "@bot HELP" and "@BOT  count" (case and spaces do not matter), and a bare "@bot" means help', async () => {
