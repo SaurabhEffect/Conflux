@@ -1,25 +1,31 @@
+# Dependabot: one pull request a week with every update in it.
+
 version: 2
+
+multi-ecosystem-groups:
+  weekly:
+    schedule:
+      interval: weekly
+      day: monday
+
 updates:
   - package-ecosystem: npm
     directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    groups:
-      hocuspocus-and-yjs:
-        patterns:
-          - "@hocuspocus/*"
-          - "yjs"
-          - "y-*"
-      tiptap:
-        patterns:
-          - "@tiptap/*"
+    patterns: ["*"]
+    multi-ecosystem-group: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: npm
     directory: /tests/e2e
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 2
+    patterns: ["*"]
+    multi-ecosystem-group: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: github-actions
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: weekly
